@@ -1,0 +1,19 @@
+#!/bin/sh
+
+SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
+USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
+# depends: file
+
+for f in $*
+do
+	MIME_TYPE="$(file --mime-type "$f" | cut -d' ' -f2)"
+	echo $MIME_TYPE
+	# Look in USER_DESKTOP_FILES_DIR first
+
+	# Now look into SYSTEM_DESKTOP_FILES_DIR
+
+done
+
+
+
+
