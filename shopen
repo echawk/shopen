@@ -2,15 +2,54 @@
 
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
+MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
 # depends: file
 
 for f in $*
 do
 	MIME_TYPE="$(file --mime-type "$f" | cut -d' ' -f2)"
-	echo $MIME_TYPE
+	if grep -q $MIME_TYPE $MIMEAPPSLIST
+	then
+		WANTDESKTOPFILE=$(grep $MIME_TYPE $MIMEAPPSLIST | cut -d'=' -f2)
+		echo $WANTDESKTOPFILE
+	fi
 	# Look in USER_DESKTOP_FILES_DIR first
 
+	FOUNDDESKTOP=N
+	for f in $USER_DESKTOP_FILES_DIR*
+	do
+		# if we found the desktop file, save the location
+		# and break the loop
+		if echo $f | grep -q $WANTDESKTOPFILE
+		then
+			FOUNDDESKTOP=Y
+			DESKTOPFILE=$(echo $f | grep $WANTDESKTOPFILE)
+			break
+		fi
+	done
+
+
 	# Now look into SYSTEM_DESKTOP_FILES_DIR
+
+	# Only search if we didn't find it in the users desktop file
+	# directory
+
+	[ FOUNDDESKTOP = N ] && {
+		for f in $SYSTEM_DESKTOP_FILES_DIR*
+		do
+			echo $f
+			if echo $f | grep -q $WANTDESKTOPFILE
+			then
+				FOUNDDESKTOP=Y
+				DESKTOPFILE=$(echo $f | grep $WANTDESKTOPFILE)
+				break
+			fi
+		done
+	}
+
+
+	# if we still havent found the proper desktop file, we now need to search for
+	# a desktop file that can handle the proper mimetype
 
 done
 
