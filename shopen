@@ -89,9 +89,9 @@ do
 	# Now we open up the file according to how the desktop
 	# file specifies
 
-	echo $f
-
-	echo $DESKTOPFILE
+	execcmd="$(grep "^Exec=" $DESKTOPFILE | sed "s~%[fFuU]~$f~")"
+	execcmd="${execcmd#*=}"
+	exec $execcmd &
 
 done
 
