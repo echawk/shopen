@@ -5,28 +5,27 @@ USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
 # depends: file
 
-for f in $*
+for f in "$@"
 do
+	FOUNDDESKTOP=N
+	WANTDESKTOPFILE=""
 	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d' ' -f2)"
 	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
 	then
-		WANTDESKTOPFILE=$(grep $MIME_TYPE $MIMEAPPSLIST | cut -d'=' -f2)
-		echo "Want: $WANTDESKTOPFILE"
+		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
 	fi
  # Look in USER_DESKTOP_FILES_DIR first
 
-	FOUNDDESKTOP=N
-	for deskf in $USER_DESKTOP_FILES_DIR*
+	for deskf in "$USER_DESKTOP_FILES_DIR"*
 	do
 		# if we found the desktop file, save the location
 		# and break the loop
 		#if echo $deskf | grep -q $WANTDESKTOPFILE
 		if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 		then
-			echo $deskf
 			FOUNDDESKTOP=Y
-			DESKTOPFILE="$(echo $deskf | grep "$WANTDESKTOPFILE")"
+			DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
 			break
 		fi
 	done
@@ -37,14 +36,13 @@ do
  # directory
 
 	[ $FOUNDDESKTOP = N ] && {
-		for deskf in $SYSTEM_DESKTOP_FILES_DIR*
+		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
 			#if echo $deskf | grep -q $WANTDESKTOPFILE
 			if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 			then
-				echo $deskf
 				FOUNDDESKTOP=Y
-				DESKTOPFILE="$(echo $deskf | grep "$WANTDESKTOPFILE")"
+				DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
 				break
 			fi
 		done
@@ -55,13 +53,12 @@ do
 
  # First check the user directory
 	[ $FOUNDDESKTOP = N ] && {
-		for deskf in $USER_DESKTOP_FILES_DIR*
+		for deskf in "$USER_DESKTOP_FILES_DIR"*
 		do
-			if grep -q $MIME_TYPE $deskf
+			if grep -q "$MIME_TYPE" "$deskf"
 			then
-				echo $deskf
 				FOUNDDESKTOP=Y
-				DESKTOPFILE=$deskf
+				DESKTOPFILE="$deskf"
 				break
 			fi
 		done
@@ -69,13 +66,12 @@ do
 
  # now check the system directory
 	[ $FOUNDDESKTOP = N ] && {
-		for deskf in $SYSTEM_DESKTOP_FILES_DIR*
+		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
-			if grep -q "$MIME_TYPE" $deskf
+			if grep -q "$MIME_TYPE" "$deskf"
 			then
-				echo $deskf
 				FOUNDDESKTOP=Y
-				DESKTOPFILE=$deskf
+				DESKTOPFILE="$deskf"
 				break
 			fi
 		done
@@ -84,12 +80,12 @@ do
 	# if DESKTOPFILE is empty, then we should exit with a 1
 	# because at this point we have found no desktop file
 	# to handle our mimetype
-	[ "$DESKTOPFILE" = "" ] && echo "failure" && exit 1
+	[ "$DESKTOPFILE" = "" ] && echo "Failed to find a proper .desktop file. Exiting..." && exit 1
 
 	# Now we open up the file according to how the desktop
 	# file specifies
 
-	execcmd="$(grep "^Exec=" $DESKTOPFILE | sed "s~%[fFuU]~$f~")"
+	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
 	execcmd="${execcmd#*=}"
 	exec $execcmd &
 
