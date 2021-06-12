@@ -27,7 +27,6 @@ REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rerules
 
 for f in "$@"
 do
-	FOUNDDESKTOP=N
 	WANTDESKTOPFILE=""
 	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d' ' -f2)"
@@ -44,7 +43,6 @@ do
 		#if echo $deskf | grep -q $WANTDESKTOPFILE
 		if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 		then
-			FOUNDDESKTOP=Y
 			DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
 			break
 		fi
@@ -55,13 +53,12 @@ do
 	# Only search if we didn't find it in the users desktop file
 	# directory
 
-	[ $FOUNDDESKTOP = N ] && {
+	[ -z $DESKTOPFILE ] && {
 		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
 			#if echo $deskf | grep -q $WANTDESKTOPFILE
 			if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 			then
-				FOUNDDESKTOP=Y
 				DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
 				break
 			fi
@@ -72,12 +69,11 @@ do
 	# a desktop file that can handle the proper mimetype
 
 	# First check the user directory
-	[ $FOUNDDESKTOP = N ] && {
+	[ -z $DESKTOPFILE ] && {
 		for deskf in "$USER_DESKTOP_FILES_DIR"*
 		do
 			if grep -q "$MIME_TYPE" "$deskf"
 			then
-				FOUNDDESKTOP=Y
 				DESKTOPFILE="$deskf"
 				break
 			fi
@@ -85,12 +81,11 @@ do
 	}
 
 	# now check the system directory
-	[ $FOUNDDESKTOP = N ] && {
+	[ -z $DESKTOPFILE ] && {
 		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
 			if grep -q "$MIME_TYPE" "$deskf"
 			then
-				FOUNDDESKTOP=Y
 				DESKTOPFILE="$deskf"
 				break
 			fi
