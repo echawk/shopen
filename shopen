@@ -102,11 +102,11 @@ do
 	# the regular expression, and the second column being the command
 	# to run. '%M' is replaced with '$f'. This is so that way commands
 	# can be arbitrarily complex.
-	[ "$DESKTOPFILE" = "" ] && {
-		[ -e $REGEXRULESFILE ] && {
-			for rerule in $(cat $REGEXRULESFILE | grep -v -E "(^#|^$)" | cut -d'	' -f1)
+	[ -z "$DESKTOPFILE" ] && {
+		[ -e "$REGEXRULESFILE" ] && {
+			for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
 			do
-				if printf "$f" | grep -q -E "$rerule"
+				if printf "%s" "$f" | grep -q -E "$rerule"
 				then
 					execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~${f}~g")
 					break
@@ -117,7 +117,7 @@ do
 
 	# Now we open up the file according to how the desktop
 	# file specifies
-	if [ -z $execcmd ]
+	if [ -z "$execcmd" ]
 	then
 		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
 		execcmd="${execcmd#*=}"
