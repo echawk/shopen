@@ -35,8 +35,8 @@ do
 	then
 		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
 	fi
-	# Look in USER_DESKTOP_FILES_DIR first
 
+	# Look in USER_DESKTOP_FILES_DIR first
 	for deskf in "$USER_DESKTOP_FILES_DIR"*
 	do
 		# if we found the desktop file, save the location
@@ -98,12 +98,16 @@ do
 	}
 
 	# if DESKTOPFILE is empty, then we look in in the regex rules file
-	# this file is a tab separated list, with the first collumn being
+
+	#TODO: implement a mime-based regex rule reader
+
+	# this file is a tab separated file, with the first collumn being
 	# the regular expression, and the second column being the command
-	# to run. '%M' is replaced with '$f'. This is so that way commands
+	# to run. '%M' is replaced with '$f'. This is so that commands
 	# can be arbitrarily complex.
 	[ -z "$DESKTOPFILE" ] && {
 		[ -e "$REGEXRULESFILE" ] && {
+			#TODO: replace with a while-read loop
 			for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
 			do
 				if printf "%s" "$f" | grep -q -E "$rerule"
@@ -115,15 +119,15 @@ do
 		}
 	}
 
-	# Now we open up the file according to how the desktop
-	# file specifies
+	# if we haven't already created the execcmd
 	if [ -z "$execcmd" ]
 	then
+		# open the file according to how the desktop file specifies
 		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
 		execcmd="${execcmd#*=}"
 	fi
+	# we use 'sh' here instead of 'exec' because it will transfer our current environment
 	sh -c "$execcmd" &
 
 done
-
 wait
