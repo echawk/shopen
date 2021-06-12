@@ -22,7 +22,7 @@
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
-REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rules
+REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rerules
 # depends: file
 
 for f in "$@"
