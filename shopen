@@ -23,6 +23,7 @@ SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
 REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rerules
+MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.mimerules
 # depends: file, grep, cut, sed
 
 for f in "$@"
@@ -95,6 +96,19 @@ do
 	# if DESKTOPFILE is empty, then we look in in the regex rules file
 
 	#TODO: implement a mime-based regex rule reader
+	[ -z "$DESKTOPFILE" ] && {
+		[ -e "$MIMERULESFILE" ] && {
+			#TODO: replace with a while-read loop
+			for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
+			do
+				if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
+				then
+					execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
+					break
+				fi
+			done
+		}
+	}
 
 	# this file is a tab separated file, with the first collumn being
 	# the regular expression, and the second column being the command
