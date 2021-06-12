@@ -53,7 +53,7 @@ do
 	# Only search if we didn't find it in the users desktop file
 	# directory
 
-	[ -z $DESKTOPFILE ] && {
+	[ -z "$DESKTOPFILE" ] && {
 		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
 			#if echo $deskf | grep -q $WANTDESKTOPFILE
@@ -69,7 +69,7 @@ do
 	# a desktop file that can handle the proper mimetype
 
 	# First check the user directory
-	[ -z $DESKTOPFILE ] && {
+	[ -z "$DESKTOPFILE" ] && {
 		for deskf in "$USER_DESKTOP_FILES_DIR"*
 		do
 			if grep -q "$MIME_TYPE" "$deskf"
@@ -81,7 +81,7 @@ do
 	}
 
 	# now check the system directory
-	[ -z $DESKTOPFILE ] && {
+	[ -z "$DESKTOPFILE" ] && {
 		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
 		do
 			if grep -q "$MIME_TYPE" "$deskf"
