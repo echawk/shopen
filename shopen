@@ -29,7 +29,7 @@ for f in "$@"
 do
 	WANTDESKTOPFILE=""
 	DESKTOPFILE=""
-	MIME_TYPE="$(file --mime-type "$f" | cut -d' ' -f2)"
+	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
 	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
 	then
 		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
