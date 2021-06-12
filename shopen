@@ -22,6 +22,7 @@
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
+REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rules
 # depends: file
 
 for f in "$@"
@@ -99,14 +100,26 @@ do
 	# if DESKTOPFILE is empty, then we should exit with a 1
 	# because at this point we have found no desktop file
 	# to handle our mimetype
-	[ "$DESKTOPFILE" = "" ] && echo "Failed to find a proper .desktop file. Exiting..." && exit 1
+	#[ "$DESKTOPFILE" = "" ] && echo "Failed to find a proper .desktop file. Exiting..." && exit 1
+	[ "$DESKTOPFILE" = "" ] && {
+		for rerule in $(cat $REGEXRULESFILE | grep -v -E "(^#|^$)" | cut -d'	' -f1)
+		do
+			if printf "$f" | grep -q -E "$rerule"
+			then
+				execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~${f}~g")
+				break
+			fi
+		done
+	}
 
 	# Now we open up the file according to how the desktop
 	# file specifies
-
-	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
-	execcmd="${execcmd#*=}"
-	exec $execcmd &
+	if [ -z $execcmd ]
+	then
+		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
+		execcmd="${execcmd#*=}"
+	fi
+	sh -c "$execcmd" &
 
 done
 
