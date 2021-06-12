@@ -107,7 +107,7 @@ do
 			do
 				if printf "%s" "$f" | grep -q -E "$rerule"
 				then
-					execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~${f}~g")
+					execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
 					break
 				fi
 			done
@@ -118,7 +118,7 @@ do
 	if [ -z "$execcmd" ]
 	then
 		# open the file according to how the desktop file specifies
-		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~$f~")"
+		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
 		execcmd="${execcmd#*=}"
 	fi
 	# we use 'sh' here instead of 'exec' because it will transfer our current environment
