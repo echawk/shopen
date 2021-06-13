@@ -22,8 +22,8 @@
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
-REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.rerules
-MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen.mimerules
+REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/rerules.tsv
+MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 # depends: file, grep, cut, sed
 
 for f in "$@"
