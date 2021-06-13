@@ -1,0 +1,47 @@
+.TH SHOPEN 1 shopen
+.SH NAME
+shopen \- POSIX shell implementation of xdg-open with extensions
+
+.SH SYNOPSIS
+.B shopen
+{ file | url }
+
+.SH DESCRIPTION
+shopen opens a file/url in a user specified application.
+shopen also implements some extensions to be more suitable
+as a general purpose 'plumber'. These extensions come in
+the form of being able to match a file's mimetype through
+regex, and matching the given input's name through regex rules.
+
+.SH CONFIGURATION
+
+If using shopen as a drop in replacement for xdg-open, there should
+be no configuration nessecary; shopen works intelligently to find
+the proper application to open a file in.
+
+This is not to say that shopen doesn't support configuration, quite
+the contrary. shopen supports two extensions to
+
+.SH FILES
+
+.IP $XDG_CONFIG_DIR/mimeapps.list
+.IP $XDG_CONFIG_DIR/shopen/mimerules.tsv
+.IP $XDG_CONFIG_DIR/shopen/rerules.tsv
+
+.SH EXAMPLES
+
+.EX
+shopen ~/book.pdf
+
+.EX
+shopen https://github.com/
+
+
+
+.SH AUTHORS
+Ethan Hawk
+
+.SH COPYRIGHT
+Copyright (c) 2021 \- Licensed under GPLv3+
+
+
