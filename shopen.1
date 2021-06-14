@@ -15,12 +15,18 @@ regex, and matching the given input's name through regex rules.
 
 .SH CONFIGURATION
 
-If using shopen as a drop in replacement for xdg-open, there should
-be no configuration nessecary; shopen works intelligently to find
-the proper application to open a file in.
+If using shopen just to open files, there should be no
+configuration nessecary; shopen searches through all desktop
+files in the system application directory and in the user's
+application directory to find the proper application to
+open a file in.
 
-This is not to say that shopen doesn't support configuration, quite
-the contrary. shopen supports two extensions to
+However, shopen cannot open urls without user configuration.
+While this may seem like a downside, it was a deliberate design
+decision, as it makes using shopen as a general purpose plumber
+much easier and straightforward.
+
+shopen looks
 
 .SH FILES
 
@@ -29,12 +35,15 @@ the contrary. shopen supports two extensions to
 .IP $XDG_CONFIG_DIR/shopen/rerules.tsv
 
 .SH EXAMPLES
-
+.SS
+Opening a local file
 .EX
-shopen ~/book.pdf
+$ shopen ~/book.pdf
 
+.SS
+Opening a URL
 .EX
-shopen https://github.com/
+$ shopen https://github.com/
 
 
 
