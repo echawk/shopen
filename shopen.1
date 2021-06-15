@@ -8,31 +8,10 @@ shopen \- POSIX shell implementation of xdg-open with extensions
 
 .SH DESCRIPTION
 shopen opens a file/url in a user specified application.
-shopen also implements some extensions to be more suitable
+shopen also implements extensions to be more suitable
 as a general purpose 'plumber'. These extensions come in
 the form of being able to match a file's mimetype through
-regex, and matching the given input's name through regex rules.
-
-.SH CONFIGURATION
-
-If using shopen just to open files, there should be no
-configuration nessecary; shopen searches through all desktop
-files in the system application directory and in the user's
-application directory to find the proper application to
-open a file in.
-
-However, shopen cannot open urls without user configuration.
-While this may seem like a downside, it was a deliberate design
-decision, as it makes using shopen as a general purpose plumber
-much easier and straightforward.
-
-shopen looks
-
-.SH FILES
-
-.IP $XDG_CONFIG_DIR/mimeapps.list
-.IP $XDG_CONFIG_DIR/shopen/mimerules.tsv
-.IP $XDG_CONFIG_DIR/shopen/rerules.tsv
+regex, and matching the given input's name through regex.
 
 .SH EXAMPLES
 .SS
@@ -46,6 +25,50 @@ Opening a URL
 $ shopen https://github.com/
 
 
+.SH CONFIGURATION
+
+If using shopen just to open files, there should be no
+configuration nessecary, provided you already have a
+.B mimeapps.list
+file in $XDG_CONFIG_DIR.
+
+If not, then shopen searches through all desktop
+files in the system application directory and in the user's
+application directory to find the proper application to
+open a file in.
+
+However, shopen cannot open urls without user configuration.
+While this may seem like a downside, it was a deliberate design
+decision, as it makes using shopen as a general purpose plumber
+much easier and straightforward.
+
+To configure the regex extensions, you need to create
+.B mimerules.tsv
+and
+.B rerules.tsv
+in $XDG_CONFIG_DIR/shopen.
+
+The way to structure these TSV files is the first column
+containing the regex you want to match, and the second column
+containing the command you want to run upon a successful match.
+To directly use the filename/input directly in your command,
+use '%M'.
+
+.SS Example matching any video file to be opened in mpv (mimerules.tsv)
+.EX
+ video/*        mpv -quiet "%M" >/dev/null
+
+.SS Example matching YouTube watch links to be opened in mpv (rerules.tsv)
+.EX
+ .*(youtube.com|youtu.be)/(watch|playlist).*        mpv --ytdl-format=best -quiet "%M" >/dev/null
+
+.SH FILES
+
+.IP $XDG_CONFIG_DIR/mimeapps.list
+
+.IP $XDG_CONFIG_DIR/shopen/mimerules.tsv
+
+.IP $XDG_CONFIG_DIR/shopen/rerules.tsv
 
 .SH AUTHORS
 Ethan Hawk
