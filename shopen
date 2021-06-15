@@ -52,65 +52,38 @@ do
 		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
 	fi
 
-	# Look in USER_DESKTOP_FILES_DIR first
-	for deskf in "$USER_DESKTOP_FILES_DIR"*
+	for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
 	do
-		# if we found the desktop file, save the location
-		# and break the loop
-		#if echo $deskf | grep -q $WANTDESKTOPFILE
-		if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
-		then
-			DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
-			break
-		fi
-	done
-
-	# Now look into SYSTEM_DESKTOP_FILES_DIR
-
-	# Only search if we didn't find it in the users desktop file
-	# directory
-
-	[ -z "$DESKTOPFILE" ] && {
-		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
+		for deskf in "$DESKDIR"*
 		do
-			#if echo $deskf | grep -q $WANTDESKTOPFILE
+			# if we found the desktop file, save the location
+			# and break the loop
 			if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 			then
 				DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
-				break
-			fi
+				break 2
+		fi
 		done
-	}
+	done
 
 	# if we still havent found the proper desktop file, we now need to search for
 	# a desktop file that can handle the proper mimetype
-
-	# First check the user directory
-	[ -z "$DESKTOPFILE" ] && {
-		for deskf in "$USER_DESKTOP_FILES_DIR"*
+	[ -z $DESKTOPFILE ] && {
+		for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
 		do
-			if grep -q "$MIME_TYPE" "$deskf"
-			then
-				DESKTOPFILE="$deskf"
-				break
-			fi
+			for deskf in "$DESKDIR"*
+			do
+				if grep -q "$MIME_TYPE" "$deskf"
+				then
+					DESKTOPFILE="$deskf"
+					break 2
+				fi
+			done
 		done
 	}
-
-	# now check the system directory
-	[ -z "$DESKTOPFILE" ] && {
-		for deskf in "$SYSTEM_DESKTOP_FILES_DIR"*
-		do
-			if grep -q "$MIME_TYPE" "$deskf"
-			then
-				DESKTOPFILE="$deskf"
-				break
-			fi
-		done
-	}
-		# open the file according to how the desktop file specifies
-		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
-		execcmd="${execcmd#*=}"
+	# open the file according to how the desktop file specifies
+	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
+	execcmd="${execcmd#*=}"
 	}
 
 	# this file is a tab separated file, with the first collumn being
