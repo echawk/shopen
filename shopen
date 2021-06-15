@@ -18,21 +18,26 @@
 
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-
+# Directories that contain desktop files
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
 USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
+
+# The standard configuration file for xdg-open
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
+
+# These files are tab separated value files, with the first collumn
+# being the regular expression, and the second column being the command
+# to run. '%M' in the second column is replaced with '$f'.
+# This is so that commands can be arbitrarily complex.
 REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/rerules.tsv
 MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 # depends: file, grep, cut, sed
 
 for f in "$@"
 do
-	WANTDESKTOPFILE=""
-	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
 
-	# If the MIMERULESFILE exists
+	# if the MIMERULESFILE exists
 	[ -e "$MIMERULESFILE" ] && {
 		# shellcheck disable=SC2013
 		for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
@@ -47,6 +52,8 @@ do
 
 	# if execcmd is length zero
 	[ -z "$execcmd" ] && {
+	WANTDESKTOPFILE=""
+	DESKTOPFILE=""
 	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
 	then
 		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
@@ -67,7 +74,7 @@ do
 	done
 
 	# if we still havent found the proper desktop file, we now need to search for
-	# a desktop file that can handle the proper mimetype
+	# a desktop file that can handle the file's mimetype
 	[ -z "$DESKTOPFILE" ] && {
 		for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
 		do
@@ -86,10 +93,7 @@ do
 	execcmd="${execcmd#*=}"
 	}
 
-	# this file is a tab separated file, with the first collumn being
-	# the regular expression, and the second column being the command
-	# to run. '%M' is replaced with '$f'. This is so that commands
-	# can be arbitrarily complex.
+	# if we haven't created an execcmd and the file exists
 	[ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
 		# shellcheck disable=SC2013
 		for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
