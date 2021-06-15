@@ -32,8 +32,8 @@ do
 	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
 
-	[ -z "$MIME_TYPE" ] && {
-	[ -e "$MIMERULESFILE" ] && {
+	# If MIME_TYPE is non-zero length and the MIMERULESFILE exists
+	[ -n "$MIME_TYPE" ] && [ -e "$MIMERULESFILE" ] && {
 		#TODO: replace with a while-read loop
 		for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
 		do
@@ -44,8 +44,8 @@ do
 			fi
 		done
 	}
-	}
 
+	# if execcmd is length zero
 	[ -z "$execcmd" ] && {
 	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
 	then
@@ -68,7 +68,7 @@ do
 
 	# if we still havent found the proper desktop file, we now need to search for
 	# a desktop file that can handle the proper mimetype
-	[ -z $DESKTOPFILE ] && {
+	[ -z "$DESKTOPFILE" ] && {
 		for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
 		do
 			for deskf in "$DESKDIR"*
@@ -90,8 +90,7 @@ do
 	# the regular expression, and the second column being the command
 	# to run. '%M' is replaced with '$f'. This is so that commands
 	# can be arbitrarily complex.
-	[ -z "$execcmd" ] && {
-		[ -e "$REGEXRULESFILE" ] && {
+	[ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
 			#TODO: replace with a while-read loop
 			for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
 			do
@@ -101,7 +100,6 @@ do
 					break
 				fi
 			done
-		}
 	}
 
 	# we use 'sh' here instead of 'exec' because it will transfer our current environment
