@@ -1,0 +1,8 @@
+# Open any video on a website in mpv
+.*(mkv|webm|mov|mp4)$	mpv -quiet "%M" >/dev/null
+# Open any image on a website in sxiv
+.*(png|jpe?g|JPE?G|png|bmp|gif)$	curl -sL "%M" > "/tmp/$(echo "%M" | sed "s/.*\///;s/%20/ /g")" && sxiv -a "/tmp/$(echo "%M" | sed "s/.*\///;s/%20/ /g")"  >/dev/null 2>&1
+# Open any ebook on a website in zathura
+.*(pdf|cbz|cbr|epub|epub|ps|djvu)$	curl -sL "%M" > "/tmp/$(echo "%M" | sed "s/.*\///;s/%20/ /g")" && zathura "/tmp/$(echo "%M" | sed "s/.*\///;s/%20/ /g")"  >/dev/null 2>&1
+# Make sure that https? links get opened by your web browser
+^https?://.+$	$BROWSER %M
