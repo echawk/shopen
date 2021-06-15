@@ -32,8 +32,8 @@ do
 	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
 
-	# If MIME_TYPE is non-zero length and the MIMERULESFILE exists
-	[ -n "$MIME_TYPE" ] && [ -e "$MIMERULESFILE" ] && {
+	# If the MIMERULESFILE exists
+	[ -e "$MIMERULESFILE" ] && {
 		# shellcheck disable=SC2013
 		for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
 		do
