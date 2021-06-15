@@ -31,6 +31,22 @@ do
 	WANTDESKTOPFILE=""
 	DESKTOPFILE=""
 	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
+
+	[ -z "$MIME_TYPE" ] && {
+	[ -e "$MIMERULESFILE" ] && {
+		#TODO: replace with a while-read loop
+		for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
+		do
+			if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
+			then
+				execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
+				break
+			fi
+		done
+	}
+	}
+
+	[ -z "$execcmd" ] && {
 	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
 	then
 		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
@@ -92,29 +108,16 @@ do
 			fi
 		done
 	}
-
-	# if DESKTOPFILE is empty, then we look in in the regex rules file
-
-	#TODO: implement a mime-based regex rule reader
-	[ -z "$DESKTOPFILE" ] && {
-		[ -e "$MIMERULESFILE" ] && {
-			#TODO: replace with a while-read loop
-			for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
-			do
-				if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
-				then
-					execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
-					break
-				fi
-			done
-		}
+		# open the file according to how the desktop file specifies
+		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
+		execcmd="${execcmd#*=}"
 	}
 
 	# this file is a tab separated file, with the first collumn being
 	# the regular expression, and the second column being the command
 	# to run. '%M' is replaced with '$f'. This is so that commands
 	# can be arbitrarily complex.
-	[ -z "$DESKTOPFILE" ] && {
+	[ -z "$execcmd" ] && {
 		[ -e "$REGEXRULESFILE" ] && {
 			#TODO: replace with a while-read loop
 			for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
@@ -128,13 +131,6 @@ do
 		}
 	}
 
-	# if we haven't already created the execcmd
-	if [ -z "$execcmd" ]
-	then
-		# open the file according to how the desktop file specifies
-		execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
-		execcmd="${execcmd#*=}"
-	fi
 	# we use 'sh' here instead of 'exec' because it will transfer our current environment
 	sh -c "$execcmd" &
 
