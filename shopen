@@ -44,6 +44,7 @@ do
 		do
 			if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
 			then
+				#FIXME: When passing a file or url with a tilde (~), this pipeline breaks
 				execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
 				break
 			fi
@@ -89,6 +90,7 @@ do
 		done
 	}
 	# open the file according to how the desktop file specifies
+	#FIXME: When passing a file or url with a tilde (~), this pipeline breaks
 	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
 	execcmd="${execcmd#*=}"
 	}
@@ -100,6 +102,7 @@ do
 		do
 			if printf "%s" "$f" | grep -q -E "$rerule"
 			then
+				#FIXME: When passing a file or url with a tilde (~), this pipeline breaks
 				execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~\"${f}\"~g")
 				break
 			fi
