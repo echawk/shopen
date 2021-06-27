@@ -89,10 +89,8 @@ do
 		done
 	}
 	# open the file according to how the desktop file specifies
-	#FIXME: When passing a file or url with a tilde (~), this pipeline breaks
-	#FIXME: Use the same method as the other two, execpt modify the = to be a ~ in the desktop file?
-	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | sed "s~%[fFuU]~\"$f\"~")"
-	execcmd="${execcmd#*=}"
+	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | tr '=' '~' | sed "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64) | base64 -d)\"~")"
+	execcmd="${execcmd#*~}"
 	}
 
 	# if we haven't created an execcmd and the file exists
