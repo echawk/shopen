@@ -33,10 +33,12 @@ configuration nessecary, provided you already have a
 file in
 .B $XDG_CONFIG_DIR.
 
-If not, then shopen searches through all desktop
-files in the system application directory and in the user's
-application directory to find the proper application to
-open a file in.
+If
+.I mimeapps.list
+doesn't exist then shopen searches through all desktop
+files in the in the user's application directory followed
+by the system's applicatino directory to find the proper
+application to open the provided file with.
 
 However, shopen cannot open urls without user configuration.
 While this may seem like a downside, it was a deliberate design
@@ -50,11 +52,12 @@ and
 in
 .B $XDG_CONFIG_DIR/shopen.
 
-The way to structure these TSV files is the first column
-containing the regex you want to match, and the second column
-containing the command you want to run upon a successful match.
-To directly use the filename/input directly in your command,
-use '%M'.
+The way to structure these TSV files is to have the first column
+contain the regex you want to match, and to have the second column
+contain the command you want to run upon a successful match.
+To directly use the matched string directly in your command,
+you can use '%M'.
+
 
 .SS Example matching any video file to be opened in mpv (mimerules.tsv)
 .EX
@@ -64,7 +67,7 @@ use '%M'.
 .EX
  .*(youtube.com|youtu.be)/(watch|playlist).*        mpv "%M" >/dev/null
 
-NOTE: Make sure to replace the spaces above with a tab if you copy it blindly!
+NOTE: If you are going to copy the above lines, make sure to replace the spaces above with a tab!
 
 .SH FILES
 
