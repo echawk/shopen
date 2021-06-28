@@ -39,18 +39,18 @@ do
 
 	# if the MIMERULESFILE exists
 	[ -e "$MIMERULESFILE" ] && {
-		# shellcheck disable=SC2013
-		for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
-		do
-			if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
-			then
-				execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
-					| cut -d'	' -f2 \
-					| sed \
-					-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
-				break
-			fi
-		done
+	# shellcheck disable=SC2013
+	for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
+	do
+		if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
+		then
+			execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
+				| cut -d'	' -f2 \
+				| sed \
+				-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
+			break
+		fi
+	done
 	}
 
 	# if execcmd is length zero
@@ -101,18 +101,18 @@ do
 
 	# if we haven't created an execcmd and the file exists
 	[ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
-		# shellcheck disable=SC2013
-		for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
-		do
-			if printf "%s" "$f" | grep -q -E "$rerule"
-			then
-				execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" \
-					| cut -d'	' -f2 \
-					| sed \
-					-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
-				break
-			fi
-		done
+	# shellcheck disable=SC2013
+	for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
+	do
+		if printf "%s" "$f" | grep -q -E "$rerule"
+		then
+			execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" \
+				| cut -d'	' -f2 \
+				| sed \
+				-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
+			break
+		fi
+	done
 	}
 
 	# we use 'sh' here instead of 'exec' because it will transfer our current environment
