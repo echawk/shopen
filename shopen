@@ -44,7 +44,7 @@ do
 		do
 			if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
 			then
-				execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"\$(echo $(printf "%s" "${f}" | base64) | base64 -d)\"~g")
+				execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" | cut -d'	' -f2 | sed "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
 				break
 			fi
 		done
@@ -89,7 +89,7 @@ do
 		done
 	}
 	# open the file according to how the desktop file specifies
-	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | tr '=' '~' | sed "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64) | base64 -d)\"~")"
+	execcmd="$(grep "^Exec=" "$DESKTOPFILE" | tr '=' '~' | sed "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~" )"
 	execcmd="${execcmd#*~}"
 	}
 
@@ -100,7 +100,7 @@ do
 		do
 			if printf "%s" "$f" | grep -q -E "$rerule"
 			then
-				execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~\"\$(echo $(printf "%s" "${f}" | base64) | base64 -d)\"~g")
+				execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" | cut -d'	' -f2 | sed "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
 				break
 			fi
 		done
