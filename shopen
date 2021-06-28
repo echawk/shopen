@@ -20,7 +20,7 @@
 
 # Directories that contain desktop files
 SYSTEM_DESKTOP_FILES_DIR=/usr/share/applications/
-USER_DESKTOP_FILES_DIR=$HOME/.local/share/applications/
+USER_DESKTOP_FILES_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/applications/
 
 # The standard configuration file for xdg-open
 MIMEAPPSLIST=${XDG_CONFIG_DIR:-$HOME/.config}/mimeapps.list
@@ -67,7 +67,9 @@ do
 		for deskf in "$DESKDIR"*
 		do
 			# if we found the desktop file, save the location
-			# and break the loop
+			# and break the loop. The substring operation here
+			# get's the last field of a path:
+			# ie : /path/to/file.extention -> file.extension
 			if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
 			then
 				DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
@@ -79,30 +81,33 @@ do
 	# if we still havent found the proper desktop file, we now need to search for
 	# a desktop file that can handle the file's mimetype
 	[ -z "$DESKTOPFILE" ] && {
-		for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
+	for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
+	do
+		for deskf in "$DESKDIR"*
 		do
-			for deskf in "$DESKDIR"*
-			do
-				if grep -q "$MIME_TYPE" "$deskf"
-				then
-					DESKTOPFILE="$deskf"
-					break 2
-				fi
-			done
+			# if the desktop file contains the mimetype
+			if grep -q "$MIME_TYPE" "$deskf"
+			then
+				DESKTOPFILE="$deskf"
+				break 2
+			fi
 		done
+	done
 	}
-	# open the file according to how the desktop file specifies
+	# open the file according to how the desktop file specifies; we replace
+	# the equal sign with a tilde because base64 uses equal signs for padding
 	execcmd="$(grep "^Exec=" "$DESKTOPFILE" \
 		| tr '=' '~' \
 		| sed \
 		-e "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~" )"
+	# use a substring command to get just the command
 	execcmd="${execcmd#*~}"
 	}
 
 	# if we haven't created an execcmd and the file exists
 	[ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
 	# shellcheck disable=SC2013
-	for rerule in $(grep -v -E "(^#|^$)"  "$REGEXRULESFILE" | cut -d'	' -f1)
+	for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
 	do
 		if printf "%s" "$f" | grep -q -E "$rerule"
 		then
@@ -115,8 +120,9 @@ do
 	done
 	}
 
-	# we use 'sh' here instead of 'exec' because it will transfer our current environment
+	# we use 'sh' here instead of 'exec' because shell is much more powerful
+	# than 'exec'. This is to allow people to write full fleged shell scripts
+	# in their configuration files for shopen.
 	sh -c "$execcmd" &
-
 done
 wait
