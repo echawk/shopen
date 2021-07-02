@@ -35,94 +35,94 @@ MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 
 for f in "$@"
 do
-	MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
+  MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
 
-	# if the MIMERULESFILE exists
-	[ -e "$MIMERULESFILE" ] && {
-	# shellcheck disable=SC2013
-	for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
-	do
-		if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
-		then
-			execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
-				| cut -d'	' -f2 \
-				| sed \
-				-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
-			break
-		fi
-	done
-	}
+  # if the MIMERULESFILE exists
+  [ -e "$MIMERULESFILE" ] && {
+  # shellcheck disable=SC2013
+  for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
+  do
+    if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
+    then
+      execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
+        | cut -d'	' -f2 \
+        | sed \
+        "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
+      break
+    fi
+  done
+  }
 
-	# if execcmd is length zero
-	[ -z "$execcmd" ] && {
-	WANTDESKTOPFILE=""
-	DESKTOPFILE=""
-	if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
-	then
-		WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
-	fi
+  # if execcmd is length zero
+  [ -z "$execcmd" ] && {
+  WANTDESKTOPFILE=""
+  DESKTOPFILE=""
+  if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
+  then
+    WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
+  fi
 
-	for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
-	do
-		for deskf in "$DESKDIR"*
-		do
-			# if we found the desktop file, save the location
-			# and break the loop. The substring operation here
-			# get's the last field of a path:
-			# ie : /path/to/file.extention -> file.extension
-			if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
-			then
-				DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
-				break 2
-		fi
-		done
-	done
+  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
+  do
+    for deskf in "$DESKDIR"*
+    do
+      # if we found the desktop file, save the location
+      # and break the loop. The substring operation here
+      # get's the last field of a path:
+      # ie : /path/to/file.extention -> file.extension
+      if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
+      then
+        DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
+        break 2
+    fi
+    done
+  done
 
-	# if we still havent found the proper desktop file, we now need to search for
-	# a desktop file that can handle the file's mimetype
-	[ -z "$DESKTOPFILE" ] && {
-	for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
-	do
-		for deskf in "$DESKDIR"*
-		do
-			# if the desktop file contains the mimetype
-			if grep -q "$MIME_TYPE" "$deskf"
-			then
-				DESKTOPFILE="$deskf"
-				break 2
-			fi
-		done
-	done
-	}
-	# open the file according to how the desktop file specifies; we replace
-	# the equal sign with a tilde because base64 uses equal signs for padding
-	execcmd="$(grep "^Exec=" "$DESKTOPFILE" \
-		| tr '=' '~' \
-		| sed \
-		-e "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~" )"
-	# use a substring command to get just the command
-	execcmd="${execcmd#*~}"
-	}
+  # if we still havent found the proper desktop file, we now need to search
+  # for a desktop file that can handle the file's mimetype
+  [ -z "$DESKTOPFILE" ] && {
+  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
+  do
+    for deskf in "$DESKDIR"*
+    do
+      # if the desktop file contains the mimetype
+      if grep -q "$MIME_TYPE" "$deskf"
+      then
+        DESKTOPFILE="$deskf"
+        break 2
+      fi
+    done
+  done
+  }
+  # open the file according to how the desktop file specifies; we replace
+  # the equal sign with a tilde because base64 uses equal signs for padding
+  execcmd="$(grep "^Exec=" "$DESKTOPFILE" \
+    | tr '=' '~' \
+    | sed \
+    "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~")"
+  # use a substring command to get just the command
+  execcmd="${execcmd#*~}"
+  }
 
-	# if we haven't created an execcmd and the file exists
-	[ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
-	# shellcheck disable=SC2013
-	for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
-	do
-		if printf "%s" "$f" | grep -q -E "$rerule"
-		then
-			execcmd=$(grep -F "${rerule}" "$REGEXRULESFILE" \
-				| cut -d'	' -f2 \
-				| sed \
-				-e "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
-			break
-		fi
-	done
-	}
+  # if we haven't created an execcmd and the file exists
+  [ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
+  # shellcheck disable=SC2013
+  for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
+  do
+    if printf "%s" "$f" | grep -q -E "$rerule"
+    then
+      execcmd="$(grep -F "${rerule}" "$REGEXRULESFILE" \
+        | cut -d'	' -f2 \
+        | sed \
+        "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")"
+      break
+    fi
+  done
+  }
 
-	# we use 'sh' here instead of 'exec' because shell is much more powerful
-	# than 'exec'. This is to allow people to write full fleged shell scripts
-	# in their configuration files for shopen.
-	sh -c "$execcmd" &
+  # we use 'sh' here instead of 'exec' because shell is much more powerful
+  # than 'exec'. This is to allow people to write full fleged shell scripts
+  # in their configuration files for shopen.
+  sh -c "$execcmd" &
 done
 wait
