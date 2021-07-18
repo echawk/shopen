@@ -39,7 +39,7 @@ do
 
   # if the MIMERULESFILE exists
   [ -e "$MIMERULESFILE" ] && {
-  # for every regex rule that is definied the mime rules file
+  # for every regex rule that is defined the mime rules file
   # shellcheck disable=SC2013
   for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
   do
@@ -67,6 +67,8 @@ do
     WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
   fi
 
+  # if WANTDESKTOPFILE is defined to some value
+  [ -n "$WANTDESKTOPFILE" ] && {
   for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
   do
     for deskf in "$DESKDIR"*
@@ -77,11 +79,12 @@ do
       # ie : /path/to/file.extention -> file.extension
       if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
       then
-        DESKTOPFILE="$(echo "$deskf" | grep "$WANTDESKTOPFILE")"
+        DESKTOPFILE="$deskf"
         break 2
     fi
     done
   done
+  }
 
   # if we still havent found the proper desktop file, we now need to search
   # for a desktop file that can handle the file's mimetype
@@ -102,6 +105,8 @@ do
     done
   done
   }
+  # Only construct the execcmd if DESKTOPFILE gets defined
+  [ -n "$DESKTOPFILE" ] && {
   # open the file according to how the desktop file specifies; we replace
   # the equal sign with a tilde because base64 uses equal signs for padding
   execcmd="$(grep "^Exec=" "$DESKTOPFILE" \
@@ -111,10 +116,11 @@ do
   # use a substring command to get just the command
   execcmd="${execcmd#*~}"
   }
+  }
 
   # if we haven't created an execcmd and the file exists
   [ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
-  # for every regex rule that is definied the regex rules file
+  # for every regex rule that is defined in the regex rules file
   # shellcheck disable=SC2013
   for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
   do
