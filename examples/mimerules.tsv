@@ -1,6 +1,3 @@
-# Open all videos in mpv
-video/*	mpv "%M"
-# Open all images in sxiv
-image/*	sxiv "%M"
-# Open dirertories with a terminal
-inode/directory	st -e sh -c "cd %M && bash"
+video/*	mpv "%M" 	Open all videos in mpv
+image/*	sxiv "%M" 	Open all images in sxiv
+inode/directory	st -e sh -c "cd %M && bash" 	Open dirertories with a terminal
