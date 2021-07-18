@@ -36,7 +36,7 @@ MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 for f in "$@"
 do
   MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
-
+  fB64="$(printf "%s" "${f}" | base64 -w 0)"
   # if the MIMERULESFILE exists
   [ -e "$MIMERULESFILE" ] && {
   # for every regex rule that is defined the mime rules file
@@ -50,12 +50,11 @@ do
       execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
         | cut -d'	' -f2 \
         | sed \
-        "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")
+        "s~%M~\"\$(echo $fB64 | base64 -d)\"~g")
       break
     fi
   done
   }
-
   # if execcmd is length zero
   [ -z "$execcmd" ] && {
   WANTDESKTOPFILE=""
@@ -112,7 +111,7 @@ do
   execcmd="$(grep "^Exec=" "$DESKTOPFILE" \
     | tr '=' '~' \
     | sed \
-    "s~%[fFuU]~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~")"
+    "s~%[fFuU]~\"\$(echo $fB64 | base64 -d)\"~")"
   # use a substring command to get just the command
   execcmd="${execcmd#*~}"
   }
@@ -131,15 +130,15 @@ do
       execcmd="$(grep -F "${rerule}" "$REGEXRULESFILE" \
         | cut -d'	' -f2 \
         | sed \
-        "s~%M~\"\$(echo $(printf "%s" "${f}" | base64 -w 0) | base64 -d)\"~g")"
+        "s~%M~\"\$(echo $fB64 | base64 -d)\"~g")"
       break
     fi
   done
   }
-
   # we use 'sh' here instead of 'exec' because shell is much more powerful
   # than 'exec'. This is to allow people to write full fleged shell scripts
   # in their configuration files for shopen.
   sh -c "$execcmd" &
+  unset execcmd
 done
 wait
