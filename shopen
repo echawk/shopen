@@ -37,7 +37,7 @@ for f in "$@"
 do
   MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
   # $f in base64 - this is to ensure that files can use any character
-  fB64="$(printf "%s" "${f}" | base64 -w 0)"
+  fB64="$(printf "%s" "$f" | base64 -w 0)"
   # if the MIMERULESFILE exists
   [ -e "$MIMERULESFILE" ] && {
   # for every regex rule that is defined the mime rules file
@@ -48,7 +48,7 @@ do
     if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
     then
       # construct the execcmd ; decode fB64 at runtime
-      execcmd=$(grep -F "${mirule}" "$MIMERULESFILE" \
+      execcmd=$(grep -F "$mirule" "$MIMERULESFILE" \
         | cut -d'	' -f2 \
         | sed \
         "s~%M~\"\$(echo $fB64 | base64 -d)\"~g")
@@ -129,7 +129,7 @@ do
     if printf "%s" "$f" | grep -q -E "$rerule"
     then
       # create our exec command using the second field in the TSV
-      execcmd="$(grep -F "${rerule}" "$REGEXRULESFILE" \
+      execcmd="$(grep -F "$rerule" "$REGEXRULESFILE" \
         | cut -d'	' -f2 \
         | sed \
         "s~%M~\"\$(echo $fB64 | base64 -d)\"~g")"
