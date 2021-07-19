@@ -56,18 +56,18 @@ do
     fi
   done
   }
-  # if execcmd is length zero
+  # if execcmd wasn't defined above
   [ -z "$execcmd" ] && {
   WANTDESKTOPFILE=""
   DESKTOPFILE=""
   # if the mimetype is mentioned in the mimeapps.list
   if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
   then
-    # set our wanted desktop file to be the second field
+    # set our wanted desktop file to be what's specified MIMEAPPSLIST
     WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
   fi
 
-  # if WANTDESKTOPFILE is defined to some value
+  # if we have a desktop file to search for
   [ -n "$WANTDESKTOPFILE" ] && {
   for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
   do
@@ -119,13 +119,13 @@ do
   }
   }
 
-  # if we haven't created an execcmd and the file exists
+  # if we haven't created an execcmd and REGEXRULESFILE exists
   [ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
   # for every regex rule that is defined in the regex rules file
   # shellcheck disable=SC2013
   for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
   do
-    # if we get a match on the input
+    # if we get a match on the input to shopen
     if printf "%s" "$f" | grep -q -E "$rerule"
     then
       # create our exec command using the second field in the TSV
@@ -138,8 +138,8 @@ do
   done
   }
   # we use 'sh' here instead of 'exec' because shell is much more powerful
-  # than 'exec'. This is to allow people to write full fleged shell scripts
-  # in their configuration files for shopen.
+  # than 'exec' when it comes to complex commands. This is to allow people
+  # to write full fleged shell scripts in their configuration files for shopen.
   sh -c "$execcmd" &
   # here we unset execcmd, because it gets generated on a per-file basis
   unset execcmd
