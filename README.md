@@ -15,4 +15,4 @@ dash        | yes
 yash        | yes
 mksh        | mostly; needs more testing
 busybox ash | yes
-
+zsh         | yes
