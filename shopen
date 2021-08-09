@@ -35,7 +35,7 @@ MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 
 for f in "$@"
 do
-  MIME_TYPE="$(file --mime-type "$f" | cut -d':' -f2 | sed "s/^ //")"
+  MIME_TYPE="$(file -bi "$f" | cut -d';' -f1)"
   # $f in base64 - this is to ensure that files can use any character
   fB64="$(printf "%s" "$f" | base64 -w 0)"
   # if the MIMERULESFILE exists
