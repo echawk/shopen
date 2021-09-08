@@ -1,6 +1,6 @@
 .PHONY: install
 PREFIX=/usr
-MANPREFIX=$(PREFIX)/share/man
+MANPREFIX=$(DESTDIR)$(PREFIX)/share/man
 
 install:
 	mkdir -pv $(DESTDIR)$(PREFIX)/bin/
