@@ -33,8 +33,7 @@ REGEXRULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/rerules.tsv
 MIMERULESFILE=${XDG_CONFIG_DIR:-$HOME/.config}/shopen/mimerules.tsv
 # depends: file, grep, cut, sed
 
-for f in "$@"
-do
+for f in "$@" ; do
   MIME_TYPE="$(file -bi "$f" | cut -d';' -f1)"
   # $f in base64 - this is to ensure that files can use any character
   fB64="$(printf "%s" "$f" | base64 -w 0)"
@@ -42,11 +41,9 @@ do
   [ -e "$MIMERULESFILE" ] && {
   # for every regex rule that is defined the mime rules file
   # shellcheck disable=SC2013
-  for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1)
-  do
+  for mirule in $(grep -v -E "(^#|^$)"  "$MIMERULESFILE" | cut -d'	' -f1) ; do
     # if we have a match
-    if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule"
-    then
+    if printf "%s" "$MIME_TYPE" | grep -q -E "$mirule" ; then
       # construct the execcmd ; decode fB64 at runtime
       execcmd=$(grep -F "$mirule" "$MIMERULESFILE" \
         | cut -d'	' -f2 \
@@ -61,24 +58,20 @@ do
   WANTDESKTOPFILE=""
   DESKTOPFILE=""
   # if the mimetype is mentioned in the mimeapps.list
-  if grep -q "$MIME_TYPE" "$MIMEAPPSLIST"
-  then
+  if grep -q "$MIME_TYPE" "$MIMEAPPSLIST" ; then
     # set our wanted desktop file to be what's specified MIMEAPPSLIST
     WANTDESKTOPFILE=$(grep "$MIME_TYPE" "$MIMEAPPSLIST" | cut -d'=' -f2)
   fi
 
   # if we have a desktop file to search for
   [ -n "$WANTDESKTOPFILE" ] && {
-  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
-  do
-    for deskf in "$DESKDIR"*
-    do
+  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR ; do
+    for deskf in "$DESKDIR"* ; do
       # if we found the desktop file, save the location
       # and break the loop. The substring operation here
       # get's the last field of a path:
       # ie : /path/to/file.extention -> file.extension
-      if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ]
-      then
+      if [ "${deskf##*/}" = "$WANTDESKTOPFILE" ] ; then
         DESKTOPFILE="$deskf"
         break 2
     fi
@@ -90,14 +83,11 @@ do
   # for a desktop file that can handle the file's mimetype
   [ -z "$DESKTOPFILE" ] && {
   # for each directory that desktop files exist
-  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR
-  do
+  for DESKDIR in $USER_DESKTOP_FILES_DIR $SYSTEM_DESKTOP_FILES_DIR ; do
     # for every desktop file in those directories
-    for deskf in "$DESKDIR"*
-    do
+    for deskf in "$DESKDIR"* ; do
       # if the desktop file contains the mimetype
-      if grep -q "$MIME_TYPE" "$deskf"
-      then
+      if grep -q "$MIME_TYPE" "$deskf" ; then
         # set the desktop file to be our matched one
         DESKTOPFILE="$deskf"
         break 2
@@ -123,11 +113,9 @@ do
   [ -z "$execcmd" ] && [ -e "$REGEXRULESFILE" ] && {
   # for every regex rule that is defined in the regex rules file
   # shellcheck disable=SC2013
-  for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1)
-  do
+  for rerule in $(grep -v -E "(^#|^$)" "$REGEXRULESFILE" | cut -d'	' -f1) ; do
     # if we get a match on the input to shopen
-    if printf "%s" "$f" | grep -q -E "$rerule"
-    then
+    if printf "%s" "$f" | grep -q -E "$rerule" ; then
       # create our exec command using the second field in the TSV
       execcmd="$(grep -F "$rerule" "$REGEXRULESFILE" \
         | cut -d'	' -f2 \
